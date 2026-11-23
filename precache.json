@@ -1,0 +1,55 @@
+{
+ "version": "88b2bec584ddcb64",
+ "files": [
+  {
+   "path": "bench.html",
+   "sha256": "53b6266a0eb79bde3d6ee113ddc2b3b39a05a3b9cc4d8ab338b5785a743b560b",
+   "size": 1320
+  },
+  {
+   "path": "bench.js",
+   "sha256": "1eb7a1231d33612ee11d3a56800e4b8dbbb7e65429bc29f63ded75d2e6916daf",
+   "size": 5323
+  },
+  {
+   "path": "lib/models.js",
+   "sha256": "3db0d106feec6194c3e65978cf6ffc26390b8f7598e03aa4156f70e449d2d13e",
+   "size": 5075
+  },
+  {
+   "path": "models.json",
+   "sha256": "1106ade8f8cb7e987d34d8d73e443822382b0197ddc6b54a70c2ef5cd6eb8fc8",
+   "size": 2222
+  },
+  {
+   "path": "models/isnet.bin",
+   "sha256": "484eb442a5e3a98ee7da7d0df31c5c3bd1368f0c89f4e4b1eff7168c0880d88b",
+   "size": 90647342
+  },
+  {
+   "path": "models/isnet_u8.bin",
+   "sha256": "05eb841c11a6e6f77f46354854668462aa9f66738388f1e1b8ea62d8f047958b",
+   "size": 46360867
+  },
+  {
+   "path": "models/u2netp.bin",
+   "sha256": "309c8469258dda742793dce0ebea8e6dd393174f89934733ecc8b14c76f4ddd8",
+   "size": 4574861
+  },
+  {
+   "path": "ort-wasm-simd-threaded.mjs",
+   "sha256": "c0bc2244e2c95fbf39a5eccb595bca31defb9eefdffa6f9ce0325a1c47524461",
+   "size": 20321
+  },
+  {
+   "path": "ort-wasm-simd-threaded.wasm",
+   "sha256": "3260fcdb33b4fc4ec33e89caf392e13625823e01049d3bf32c38464f9dbfe14c",
+   "size": 11815498
+  },
+  {
+   "path": "ort.wasm.min.mjs",
+   "sha256": "d27154a28588534b4343f9f935c1a555a1f84784e5677d9d356fcb732a815757",
+   "size": 49856
+  }
+ ]
+}

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vintrend Studio - banc d'essai</title>
+<style>
+  body { font: 15px system-ui, sans-serif; margin: 12px; background: #fafafa; color: #222; }
+  button, input { font: inherit; margin: 4px 0; }
+  #crash { color: #b00020; font-weight: bold; }
+  .row { display: flex; gap: 8px; align-items: flex-start; margin: 10px 0; flex-wrap: wrap; }
+  .row canvas { max-width: 46vw; height: auto; background: #808080; border: 1px solid #ccc; }
+  pre { white-space: pre-wrap; font-size: 12px; margin: 0; }
+</style>
+</head>
+<body>
+<h1>Banc d'essai du détourage</h1>
+<p>Modèle : <b id="model">?</b> (changer avec <code>?model=isnet</code>, <code>isnet_u8</code>, <code>birefnet_lite</code> ou <code>u2netp</code> ; un seul modèle par chargement de page)</p>
+<p id="crash" hidden>PLANTAGE précédent : la page s'est arrêtée en plein traitement.</p>
+<input id="files" type="file" accept="image/*" multiple>
+<p id="status">Choisis des photos.</p>
+<div>
+  <button id="copy">Copier le rapport</button>
+  <button id="share">Tester le partage</button>
+  <span id="shareout"></span>
+</div>
+<div id="out"></div>
+<script type="module" src="bench.js"></script>
+</body>
+</html>

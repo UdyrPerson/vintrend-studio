@@ -1,0 +1,125 @@
+{
+ "default": "u2netp",
+ "ort_version": "1.23.0",
+ "models": {
+  "u2netp": {
+   "input_size": 320,
+   "input_name": "input.1",
+   "output_name": "1959",
+   "mean": [
+    0.485,
+    0.456,
+    0.406
+   ],
+   "std": [
+    0.229,
+    0.224,
+    0.225
+   ],
+   "divide_by_max": true,
+   "output": "minmax",
+   "variant": "fp32",
+   "wasm_ok": true,
+   "files": [
+    "u2netp.bin"
+   ],
+   "sha256": [
+    "309c8469258dda742793dce0ebea8e6dd393174f89934733ecc8b14c76f4ddd8"
+   ],
+   "iou": null,
+   "sizes": [
+    4574861
+   ]
+  },
+  "isnet": {
+   "input_size": 1024,
+   "input_name": "input_image",
+   "output_name": "output_image",
+   "mean": [
+    0.485,
+    0.456,
+    0.406
+   ],
+   "std": [
+    1,
+    1,
+    1
+   ],
+   "divide_by_max": true,
+   "output": "minmax",
+   "variant": "fp16",
+   "wasm_ok": true,
+   "files": [
+    "isnet.bin"
+   ],
+   "sha256": [
+    "484eb442a5e3a98ee7da7d0df31c5c3bd1368f0c89f4e4b1eff7168c0880d88b"
+   ],
+   "iou": 1,
+   "gate_label": null,
+   "sizes": [
+    90647342
+   ]
+  },
+  "isnet_u8": {
+   "force_variant": "uint8",
+   "bench_only": true,
+   "input_size": 1024,
+   "input_name": "input_image",
+   "output_name": "output_image",
+   "mean": [
+    0.485,
+    0.456,
+    0.406
+   ],
+   "std": [
+    1,
+    1,
+    1
+   ],
+   "divide_by_max": true,
+   "output": "minmax",
+   "variant": "uint8",
+   "wasm_ok": true,
+   "files": [
+    "isnet_u8.bin"
+   ],
+   "sha256": [
+    "05eb841c11a6e6f77f46354854668462aa9f66738388f1e1b8ea62d8f047958b"
+   ],
+   "iou": 0.9656,
+   "gate_label": "sous le seuil 0,97, candidat du banc seulement",
+   "sizes": [
+    46360867
+   ]
+  },
+  "birefnet_lite": {
+   "input_size": 1024,
+   "input_name": "input_image",
+   "output_name": "output_image",
+   "mean": [
+    0.485,
+    0.456,
+    0.406
+   ],
+   "std": [
+    0.229,
+    0.224,
+    0.225
+   ],
+   "divide_by_max": false,
+   "output": "sigmoid",
+   "ort_opt": "basic",
+   "variant": "uint8",
+   "wasm_ok": false,
+   "files": [],
+   "sha256": [
+    "bb5f773988c886d4e8f23d6bb600d3bbac7e83b7eaed04249115b94ceb65bb83",
+    "520d033a396204db6aaa14d4ab63b8d7f443ba7df3a3561f0e5e7612c80f0872",
+    "fe947c7f888d6f0c3f97eeb733dc697e7e0098e43f3a630b825b6a313719f830"
+   ],
+   "iou": 0.9992,
+   "sizes": []
+  }
+ }
+}
