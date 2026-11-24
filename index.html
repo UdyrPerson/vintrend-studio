@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vintrend Studio</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<h1>Vintrend Studio</h1>
+<p>Préparez vos photos d'article : détourage, fond et lumière, tout se passe sur votre téléphone, hors ligne.</p>
+<div id="banner" hidden>
+  <p id="banner-msg"></p>
+  <button id="banner-btn" type="button">Télécharger le modèle</button>
+  <progress id="banner-bar" max="1" value="0" hidden></progress>
+</div>
+<main id="app"></main>
+<script type="module">
+import { loadModel } from './lib/models.js';
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js', { type: 'module' }).catch(() => {});
+navigator.storage?.persist?.().catch(() => {});
+
+// Point de vigilance 5 : iOS peut effacer le cache du modèle. On le vérifie à chaque lancement.
+const $ = (id) => document.getElementById(id);
+(async () => {
+  const cfg = await (await fetch('./models.json')).json();
+  const m = cfg.models[cfg.default];
+  if (!m?.files.length) return;
+  const urls = m.files.map((f) => new URL(`./models/${f}`, location.href).href);
+  const cached = await Promise.all(urls.map((u) => caches.match(u)));
+  if (cached.every(Boolean)) return;
+  const mo = Math.round(m.sizes.reduce((a, b) => a + b, 0) / 1e6);
+  $('banner').hidden = false;
+  const msg = () => { $('banner-msg').textContent = navigator.onLine ? `modèle à re-télécharger (${mo} Mo)` : 'Connexion nécessaire pour télécharger le modèle. Le mode Lumière seule reste disponible.'; $('banner-btn').disabled = !navigator.onLine; };
+  msg(); addEventListener('online', msg); addEventListener('offline', msg);
+  $('banner-btn').onclick = async () => {
+    $('banner-btn').disabled = true; $('banner-bar').hidden = false;
+    try {
+      await loadModel(cfg.default, (got, total) => { $('banner-bar').value = got / total; });
+      $('banner').hidden = true;
+    } catch (e) { $('banner-msg').textContent = 'Échec du téléchargement : ' + (e.message || e); $('banner-btn').disabled = false; }
+  };
+})().catch((e) => { $('banner').hidden = false; $('banner-btn').hidden = true; $('banner-msg').textContent = 'Impossible de vérifier le modèle : ' + (e.message || e); });
+</script>
+</body>
+</html>

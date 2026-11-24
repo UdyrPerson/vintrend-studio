@@ -1,5 +1,5 @@
 {
- "version": "88b2bec584ddcb64",
+ "version": "8fb838ba6bd276ea",
  "files": [
   {
    "path": "bench.html",
@@ -12,9 +12,49 @@
    "size": 5323
   },
   {
+   "path": "icon-192.png",
+   "sha256": "bfd4836b1934c90dfbea344bf8d17c8b00571269c3c93653ffef81272edc29f7",
+   "size": 3899
+  },
+  {
+   "path": "icon-512.png",
+   "sha256": "f8e4b2a685a96bfe5fb1b9cce78896365df6c2ae84af743ee934b3f41ea675e4",
+   "size": 10996
+  },
+  {
+   "path": "index.html",
+   "sha256": "61bb09d6fbc83847cceffdb9862d2f5fee933ae0cd2278095c89296406dd5b88",
+   "size": 2461
+  },
+  {
    "path": "lib/models.js",
-   "sha256": "3db0d106feec6194c3e65978cf6ffc26390b8f7598e03aa4156f70e449d2d13e",
-   "size": 5075
+   "sha256": "5930476515698d74d0bd70b6ba2cc0a0670ccf7240ceecaef15ff6528ef16b0d",
+   "size": 5991
+  },
+  {
+   "path": "lib/photo_q.js",
+   "sha256": "bed0d3e67ca31c135eb52b653ec2b8b03e323cde1142b0417cb798c1226ea39c",
+   "size": 9458
+  },
+  {
+   "path": "lib/resample.js",
+   "sha256": "8a8ae130493ab92b27bb8a26c8c2617e5e3618d4343a39e64b137e76dfcd7819",
+   "size": 5679
+  },
+  {
+   "path": "lib/retouch.js",
+   "sha256": "93ebfc6c233f858afb3059a2db4b112dedee59b5a94e0fc0ca736e6873cd5a4e",
+   "size": 13551
+  },
+  {
+   "path": "lib/store.js",
+   "sha256": "4ab79e9325e97133377d27a020d76a27bfe310b05554afb47e5e48d86d04e481",
+   "size": 2432
+  },
+  {
+   "path": "manifest.webmanifest",
+   "sha256": "20a22551c0145ae0f66f417dd184994ea3036cd0da501dcc5d5e42c3eddfb108",
+   "size": 616
   },
   {
    "path": "models.json",
@@ -50,6 +90,26 @@
    "path": "ort.wasm.min.mjs",
    "sha256": "d27154a28588534b4343f9f935c1a555a1f84784e5677d9d356fcb732a815757",
    "size": 49856
+  },
+  {
+   "path": "style.css",
+   "sha256": "8a25eb332e62fd800f15f9f536fcfaa505b80ef139fb9509ce608ac7a1f56858",
+   "size": 596
+  },
+  {
+   "path": "sw.js",
+   "sha256": "27b805cd593dc0a8c52478510ce7660fbc8c4ecbe6036bf4c34d13f91fa52fca",
+   "size": 2207
+  },
+  {
+   "path": "targets/categories.json",
+   "sha256": "2714f9ac3480e47ec12eb2fb676459506b9552ebf77cd6f640a086bb5f7be768",
+   "size": 5118
+  },
+  {
+   "path": "targets/targets.v000.json",
+   "sha256": "8d354ec4411cde2c18ba9bdd375edef5f9ca3b1df0ceb8231bbc81fdacf1667a",
+   "size": 1733
   }
  ]
 }

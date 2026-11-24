@@ -1,0 +1,97 @@
+{
+ "version": "v000",
+ "built_at": "2026-11-24T01:01:17Z",
+ "pq_version": "photo_q:703f260497c3+text:v001",
+ "prereg_sha256": "330556564ae3608fe1becdb8a79601a6c7d157fba522dcc4d924ab7603c4d35f",
+ "expires": "2027-01-15",
+ "s_def": {
+  "attrs": {
+   "lumiere": [
+    {
+     "key": "L_mean_fg",
+     "sign": 1,
+     "tf": "id"
+    },
+    {
+     "key": "clip_hi_fg+clip_lo_fg",
+     "sign": -1,
+     "tf": "id"
+    }
+   ],
+   "fond": [
+    {
+     "key": "edge_L",
+     "sign": 1,
+     "tf": "id"
+    },
+    {
+     "key": "edge_sd",
+     "sign": -1,
+     "tf": "id"
+    },
+    {
+     "key": "bg_edges",
+     "sign": -1,
+     "tf": "id"
+    }
+   ],
+   "nettete": [
+    {
+     "key": "lap_norm_fg",
+     "sign": 1,
+     "tf": "log"
+    }
+   ],
+   "detachement": [
+    {
+     "key": "fg_bg_dE",
+     "sign": 1,
+     "tf": "id"
+    },
+    {
+     "key": "cut",
+     "sign": -1,
+     "tf": "id"
+    }
+   ]
+  },
+  "min_attrs": 3,
+  "group_min": 200,
+  "bg_edges_threshold": null
+ },
+ "n2": null,
+ "effects": null,
+ "groups": {
+  "uniform_bg": null
+ },
+ "advice": [
+  {
+   "scope": "all",
+   "text": "La première photo montre l'article entier.",
+   "level": "étude corrélationnelle (eBay)",
+   "verdict": null
+  },
+  {
+   "scope": "all",
+   "text": "Pour un défaut ou un détail : corriger la lumière seule, sans changer l'article.",
+   "level": "étude corrélationnelle (eBay)",
+   "verdict": null
+  },
+  {
+   "scope": "all",
+   "text": "Fond uni et clair.",
+   "level": "étude quasi causale (Airbnb)",
+   "verdict": null
+  },
+  {
+   "scope": "all",
+   "text": "Sujet entier et détaché du fond.",
+   "level": "étude quasi causale (Airbnb)",
+   "verdict": null
+  }
+ ],
+ "diagnostic": {
+  "photo_q_ok": 0,
+  "jours_utc_complets": 0
+ }
+}

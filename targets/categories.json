@@ -1,0 +1,294 @@
+{
+ "4": {
+  "name": "Vêtements",
+  "l1": "Femmes"
+ },
+ "16": {
+  "name": "Chaussures",
+  "l1": "Femmes"
+ },
+ "19": {
+  "name": "Sacs",
+  "l1": "Femmes"
+ },
+ "82": {
+  "name": "Accessoires",
+  "l1": "Hommes"
+ },
+ "139": {
+  "name": "Soins",
+  "l1": "Hommes"
+ },
+ "146": {
+  "name": "Beauté",
+  "l1": "Femmes"
+ },
+ "1187": {
+  "name": "Accessoires",
+  "l1": "Femmes"
+ },
+ "1194": {
+  "name": "Vêtements pour garçons",
+  "l1": "Enfants"
+ },
+ "1195": {
+  "name": "Vêtements pour filles",
+  "l1": "Enfants"
+ },
+ "1231": {
+  "name": "Chaussures",
+  "l1": "Hommes"
+ },
+ "1496": {
+  "name": "Poussettes, porte-bébé et sièges auto",
+  "l1": "Enfants"
+ },
+ "1498": {
+  "name": "Meubles et décoration",
+  "l1": "Enfants"
+ },
+ "1499": {
+  "name": "Jeux et jouets",
+  "l1": "Enfants"
+ },
+ "1501": {
+  "name": "Fournitures scolaires",
+  "l1": "Enfants"
+ },
+ "1502": {
+  "name": "Autres articles pour bébé et enfant",
+  "l1": "Enfants"
+ },
+ "1919": {
+  "name": "Textiles",
+  "l1": "Maison"
+ },
+ "1920": {
+  "name": "Arts de la table",
+  "l1": "Maison"
+ },
+ "1934": {
+  "name": "Décoration",
+  "l1": "Maison"
+ },
+ "2050": {
+  "name": "Vêtements",
+  "l1": "Hommes"
+ },
+ "2312": {
+  "name": "Livres",
+  "l1": "Livres et médias"
+ },
+ "2915": {
+  "name": "Célébrations et fêtes",
+  "l1": "Maison"
+ },
+ "2983": {
+  "name": "Articles de créateurs pour femmes",
+  "l1": "Articles de créateurs"
+ },
+ "2988": {
+  "name": "Articles de créateurs pour hommes",
+  "l1": "Articles de créateurs"
+ },
+ "2995": {
+  "name": "Autres appareils et accessoires",
+  "l1": "Électronique"
+ },
+ "3002": {
+  "name": "Jeux vidéo et consoles",
+  "l1": "Électronique"
+ },
+ "3004": {
+  "name": "Objets connectés",
+  "l1": "Électronique"
+ },
+ "3036": {
+  "name": "Musique",
+  "l1": "Livres et médias"
+ },
+ "3037": {
+  "name": "Vidéo",
+  "l1": "Livres et médias"
+ },
+ "3054": {
+  "name": "Appareils photo et accessoires",
+  "l1": "Électronique"
+ },
+ "3296": {
+  "name": "Sommeil et literie",
+  "l1": "Enfants"
+ },
+ "3393": {
+  "name": "Bain et change",
+  "l1": "Enfants"
+ },
+ "3419": {
+  "name": "Santé et grossesse",
+  "l1": "Enfants"
+ },
+ "3427": {
+  "name": "Sécurité bébé et enfant",
+  "l1": "Enfants"
+ },
+ "3432": {
+  "name": "Allaitement et alimentation",
+  "l1": "Enfants"
+ },
+ "3474": {
+  "name": "Petits appareils de cuisine",
+  "l1": "Maison"
+ },
+ "3476": {
+  "name": "Cuisson et pâtisserie",
+  "l1": "Maison"
+ },
+ "3477": {
+  "name": "Outils de cuisine",
+  "l1": "Maison"
+ },
+ "3478": {
+  "name": "Entretien de la maison",
+  "l1": "Maison"
+ },
+ "3564": {
+  "name": "Ordinateurs et accessoires",
+  "l1": "Électronique"
+ },
+ "3565": {
+  "name": "Téléphones portables et équipements de communication",
+  "l1": "Électronique"
+ },
+ "3566": {
+  "name": "Audio, casques et hi-fi",
+  "l1": "Électronique"
+ },
+ "3567": {
+  "name": "Tablettes, liseuses et accessoires",
+  "l1": "Électronique"
+ },
+ "3568": {
+  "name": "TV et home cinema",
+  "l1": "Électronique"
+ },
+ "3569": {
+  "name": "Produits de beauté et de soins personnels",
+  "l1": "Électronique"
+ },
+ "3811": {
+  "name": "Outils et bricolage",
+  "l1": "Maison"
+ },
+ "3812": {
+  "name": "Extérieur et jardin",
+  "l1": "Maison"
+ },
+ "4333": {
+  "name": "Cyclisme",
+  "l1": "Sport"
+ },
+ "4334": {
+  "name": "Fitness, course à pied et yoga",
+  "l1": "Sport"
+ },
+ "4335": {
+  "name": "Sports de plein air",
+  "l1": "Sport"
+ },
+ "4336": {
+  "name": "Sports nautiques",
+  "l1": "Sport"
+ },
+ "4337": {
+  "name": "Sports d'équipe",
+  "l1": "Sport"
+ },
+ "4338": {
+  "name": "Sports de raquette",
+  "l1": "Sport"
+ },
+ "4339": {
+  "name": "Golf",
+  "l1": "Sport"
+ },
+ "4340": {
+  "name": "Équitation",
+  "l1": "Sport"
+ },
+ "4341": {
+  "name": "Skateboards et trottinettes",
+  "l1": "Sport"
+ },
+ "4342": {
+  "name": "Boxe et arts martiaux",
+  "l1": "Sport"
+ },
+ "4343": {
+  "name": "Sports et jeux de loisir",
+  "l1": "Sport"
+ },
+ "4344": {
+  "name": "Sports d'hiver",
+  "l1": "Sport"
+ },
+ "4825": {
+  "name": "Instruments de musique et équipement",
+  "l1": "Loisirs et collections"
+ },
+ "4874": {
+  "name": "Cartes à collectionner",
+  "l1": "Loisirs et collections"
+ },
+ "4881": {
+  "name": "Jeux de société",
+  "l1": "Loisirs et collections"
+ },
+ "4882": {
+  "name": "Puzzles",
+  "l1": "Loisirs et collections"
+ },
+ "4883": {
+  "name": "Jeux de plateau et jeux miniatures",
+  "l1": "Loisirs et collections"
+ },
+ "4888": {
+  "name": "Timbres",
+  "l1": "Loisirs et collections"
+ },
+ "4894": {
+  "name": "Cartes postales",
+  "l1": "Loisirs et collections"
+ },
+ "4895": {
+  "name": "Pièces de monnaie et billets",
+  "l1": "Loisirs et collections"
+ },
+ "4901": {
+  "name": "Souvenirs",
+  "l1": "Loisirs et collections"
+ },
+ "4906": {
+  "name": "Rangements pour objets de collection",
+  "l1": "Loisirs et collections"
+ },
+ "4916": {
+  "name": "Accessoires de jeux",
+  "l1": "Loisirs et collections"
+ },
+ "5106": {
+  "name": "Animaux",
+  "l1": "Maison"
+ },
+ "5151": {
+  "name": "Loisirs créatifs",
+  "l1": "Loisirs et collections"
+ },
+ "5424": {
+  "name": "Magazines",
+  "l1": "Livres et médias"
+ },
+ "5428": {
+  "name": "Fournitures de bureau",
+  "l1": "Maison"
+ }
+}

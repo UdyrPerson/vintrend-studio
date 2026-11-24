@@ -1,0 +1,8 @@
+:root { color-scheme: light dark; --bg: #f4f4f2; --fg: #1c1c1c; --accent: #2a6f5b; }
+@media (prefers-color-scheme: dark) { :root { --bg: #1c1c1c; --fg: #f4f4f2; } }
+body { margin: 0; padding: 16px; font: 16px/1.4 system-ui, sans-serif; background: var(--bg); color: var(--fg); }
+h1 { font-size: 1.3rem; margin: 0 0 8px; }
+button { font: inherit; padding: 10px 16px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; }
+#banner { margin: 12px 0; padding: 12px; border: 1px solid var(--accent); border-radius: 8px; }
+#banner[hidden] { display: none; }
+progress { width: 100%; }
