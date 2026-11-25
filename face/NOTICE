@@ -1,0 +1,2 @@
+@mediapipe/tasks-vision 1.2.2 et modele blaze_face_short_range (float16, v1) : Copyright Google LLC, licence Apache-2.0 (voir LICENSE).
+Modification : dans 1.2.2/vision_bundle.mjs, l'URL de telemetrie (hote odml.pa.googleapis.com) est remplacee par data:, ; aucun autre octet n'est change.

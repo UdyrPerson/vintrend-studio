@@ -1,6 +1,6 @@
 {
  "version": "v000",
- "built_at": "2026-11-24T01:01:17Z",
+ "built_at": "2026-11-24T01:16:08Z",
  "pq_version": "photo_q:703f260497c3+text:v001",
  "prereg_sha256": "330556564ae3608fe1becdb8a79601a6c7d157fba522dcc4d924ab7603c4d35f",
  "expires": "2027-01-15",
@@ -63,6 +63,13 @@
  "effects": null,
  "groups": {
   "uniform_bg": null
+ },
+ "levels": {
+  "lumiere": "étude corrélationnelle (eBay)",
+  "fond": "étude corrélationnelle (eBay)",
+  "nettete": "provisoire",
+  "detachement": "étude corrélationnelle (eBay)",
+  "S": "provisoire"
  },
  "advice": [
   {

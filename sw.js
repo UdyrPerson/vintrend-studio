@@ -1,10 +1,11 @@
 // Service worker (module) : coquille hors ligne + réception des photos partagées (Web Share Target).
 // Coquille précachée à l'installation ; les modèles (models/*.bin) sont mis en cache à leur première lecture,
-// dans un cache à part qui survit aux changements de version.
+// dans un cache à part qui survit aux changements de version. face/ (MediaPipe, 15 Mo) n'est jamais précaché : lib/face.js le
+// copie dans « vs-face » à la première utilisation.
 import { createStore } from './lib/store.js';
 
 // publish.mjs remplace le marqueur ci-dessous par la version de precache.json : chaque publication change les octets de sw.js.
-const VERSION = '8fb838ba6bd276ea';
+const VERSION = '202af66854744b68';
 const MODELS = 'vs-models';
 const isModel = (p) => p.startsWith('models/') && p.endsWith('.bin');
 const rel = (url) => new URL(url).pathname.slice(new URL('./', self.location.href).pathname.length);
@@ -13,7 +14,7 @@ self.addEventListener('install', (e) => {
   e.waitUntil((async () => {
     const pc = await (await fetch('./precache.json', { cache: 'no-store' })).json();
     const c = await caches.open('vs-' + VERSION);
-    await c.addAll(['./', ...pc.files.map((f) => f.path).filter((p) => !isModel(p)).map((p) => './' + p)].map((u) => new Request(u, { cache: 'reload' })));
+    await c.addAll(['./', ...pc.files.map((f) => f.path).filter((p) => !isModel(p) && !p.startsWith('face/')).map((p) => './' + p)].map((u) => new Request(u, { cache: 'reload' })));
     await c.put('./precache.json', new Response(JSON.stringify(pc)));
     await self.skipWaiting();
   })());
@@ -21,7 +22,7 @@ self.addEventListener('install', (e) => {
 
 self.addEventListener('activate', (e) => {
   e.waitUntil((async () => {
-    for (const k of await caches.keys()) if (k !== MODELS && k !== 'vs-' + VERSION) await caches.delete(k);
+    for (const k of await caches.keys()) if (k !== MODELS && k !== 'vs-face' && k !== 'vs-' + VERSION) await caches.delete(k);
     await self.clients.claim();
   })());
 });

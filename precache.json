@@ -1,5 +1,5 @@
 {
- "version": "8fb838ba6bd276ea",
+ "version": "202af66854744b68",
  "files": [
   {
    "path": "bench.html",
@@ -10,6 +10,46 @@
    "path": "bench.js",
    "sha256": "1eb7a1231d33612ee11d3a56800e4b8dbbb7e65429bc29f63ded75d2e6916daf",
    "size": 5323
+  },
+  {
+   "path": "capture.html",
+   "sha256": "b3a4a446005e975ff2e3f80c7a94ebb108ecf024588150067d29af6771dc00a4",
+   "size": 3258
+  },
+  {
+   "path": "capture.js",
+   "sha256": "2f06de98a332fdf0fa64aacd0eb89707360ee6fc11b2ba74466189e86f3cd023",
+   "size": 11037
+  },
+  {
+   "path": "face/1.2.2/blaze_face_short_range.tflite",
+   "sha256": "b4578f35940bf5a1a655214a1cce5cab13eba73c1297cd78e1a04c2380b0152f",
+   "size": 229746
+  },
+  {
+   "path": "face/1.2.2/vision_bundle.mjs",
+   "sha256": "7c884ac7d275ae56bb4251e5de6cc71a0a19c992ae7f5ce34166cbdf784b44e8",
+   "size": 156031
+  },
+  {
+   "path": "face/1.2.2/wasm/vision_wasm_internal.js",
+   "sha256": "f2b9c17131ea79716ec6bf07b117a087b2749a6f8a1e2f1f2e77a9382092db5b",
+   "size": 334128
+  },
+  {
+   "path": "face/1.2.2/wasm/vision_wasm_internal.wasm",
+   "sha256": "f5bd25147ac89d506074293ce2675969b10e827180db95a0d9689c2ed80764ab",
+   "size": 14603354
+  },
+  {
+   "path": "face/LICENSE",
+   "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+   "size": 11358
+  },
+  {
+   "path": "face/NOTICE",
+   "sha256": "f134fdf0d99d9171654d4cf62a18fbd3de7c08a6768eda3deca804632c0df742",
+   "size": 290
   },
   {
    "path": "icon-192.png",
@@ -23,8 +63,28 @@
   },
   {
    "path": "index.html",
-   "sha256": "61bb09d6fbc83847cceffdb9862d2f5fee933ae0cd2278095c89296406dd5b88",
-   "size": 2461
+   "sha256": "10f2ef4f8eeabbac9a51d6330d1f99505adfcc1422531dc52a6744199ee2dbc6",
+   "size": 2523
+  },
+  {
+   "path": "judge.html",
+   "sha256": "b8fd3da044f09df2fca68d93c60638d57f73ceb96201566ce338530ca077ab73",
+   "size": 6784
+  },
+  {
+   "path": "lib/diag.js",
+   "sha256": "1c737bcc764706a8f73f815e8fb4b3498bce85b58041f58848ea2997d2e6ceb3",
+   "size": 3615
+  },
+  {
+   "path": "lib/edge.js",
+   "sha256": "1c3fe0d2abdad245449de62fe6cf6a685016763887f3355c380736d116cb716f",
+   "size": 11397
+  },
+  {
+   "path": "lib/face.js",
+   "sha256": "67093d6948fbbc494e3d4cd40735aac95b0316b9647efc59ebdbdbed32334d6f",
+   "size": 2574
   },
   {
    "path": "lib/models.js",
@@ -37,19 +97,29 @@
    "size": 9458
   },
   {
+   "path": "lib/quality.js",
+   "sha256": "5c87df628c91ca1023b9ec9ab4b0d4f259ffc06e4e3e3767c52a0a1410a5ed7c",
+   "size": 9764
+  },
+  {
    "path": "lib/resample.js",
    "sha256": "8a8ae130493ab92b27bb8a26c8c2617e5e3618d4343a39e64b137e76dfcd7819",
    "size": 5679
   },
   {
    "path": "lib/retouch.js",
-   "sha256": "93ebfc6c233f858afb3059a2db4b112dedee59b5a94e0fc0ca736e6873cd5a4e",
-   "size": 13551
+   "sha256": "c3d18e847fadf33c57e0225a0607b7cbf352d34652331f3d4c70529271da1d21",
+   "size": 26140
   },
   {
    "path": "lib/store.js",
    "sha256": "4ab79e9325e97133377d27a020d76a27bfe310b05554afb47e5e48d86d04e481",
    "size": 2432
+  },
+  {
+   "path": "lib/worn.js",
+   "sha256": "50d649ac5d47cba16940f52039270e7359ab7dcb0df2f19f00c388374641cda1",
+   "size": 12884
   },
   {
    "path": "manifest.webmanifest",
@@ -58,8 +128,8 @@
   },
   {
    "path": "models.json",
-   "sha256": "1106ade8f8cb7e987d34d8d73e443822382b0197ddc6b54a70c2ef5cd6eb8fc8",
-   "size": 2222
+   "sha256": "41713792c47ade9c9337d326e878c763fa366ca8e5d18e5f9444883afb18be02",
+   "size": 2258
   },
   {
    "path": "models/isnet.bin",
@@ -98,8 +168,8 @@
   },
   {
    "path": "sw.js",
-   "sha256": "27b805cd593dc0a8c52478510ce7660fbc8c4ecbe6036bf4c34d13f91fa52fca",
-   "size": 2207
+   "sha256": "c7d301fcc13b10e6e933fb4209af307a2872d8bf74693c8edcad0c11174ae0de",
+   "size": 2375
   },
   {
    "path": "targets/categories.json",
@@ -108,8 +178,8 @@
   },
   {
    "path": "targets/targets.v000.json",
-   "sha256": "8d354ec4411cde2c18ba9bdd375edef5f9ca3b1df0ceb8231bbc81fdacf1667a",
-   "size": 1733
+   "sha256": "05e800360e81de19a154cc1cecd0eff4f0ec25f47ba9f11b441b1ef3114786cd",
+   "size": 1942
   }
  ]
 }

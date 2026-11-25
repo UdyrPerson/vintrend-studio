@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jugement à l'aveugle - Vintrend Studio</title>
+<style>
+  body { font: 16px/1.4 system-ui, sans-serif; margin: 0 auto; max-width: 900px; padding: 12px; color: #222; background: #fff; }
+  fieldset { margin: 0 0 12px; border: 1px solid #bbb; border-radius: 8px; }
+  button, input[type=number], textarea { font: inherit; padding: 10px 14px; }
+  button { min-height: 44px; cursor: pointer; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+  .pair button { padding: 4px; background: #f4f4f4; border: 2px solid #999; border-radius: 8px; }
+  .pair img { width: 100%; height: 55vh; object-fit: contain; display: block; }
+  textarea { width: 100%; box-sizing: border-box; min-height: 8em; font-family: monospace; font-size: 13px; }
+  .note { color: #555; font-size: 14px; }
+  [hidden] { display: none; }
+</style>
+</head>
+<body>
+<h1>Jugement à l'aveugle</h1>
+<p class="note">Deux images par paire, l'originale et celle du Studio, placées à gauche ou à droite au hasard. Choisissez celle qui donne le plus envie d'acheter. Critère de réussite : Studio préféré sur au moins 75 % des paires, avec au moins 20 paires.</p>
+
+<fieldset id="setup">
+  <legend>Préparation</legend>
+  <p><label>Originaux : <input type="file" id="orig" accept="image/*" multiple></label></p>
+  <p><label>Sorties du Studio : <input type="file" id="studio" accept="image/*" multiple></label></p>
+  <p class="note">Les paires se forment par nom de fichier (sans l'extension) ; si les noms ne se correspondent pas tous, par ordre alphabétique des noms.</p>
+  <p><label>Graine (laisser pour un nouveau tirage, ou saisir une graine pour rejouer le même ordre) : <input type="number" id="seed" min="0" step="1"></label></p>
+  <p><button id="start">Commencer</button> <span id="msg" class="note"></span></p>
+</fieldset>
+
+<section id="play" hidden>
+  <p>Paire <b id="pos"></b> sur <b id="total"></b> - graine <b id="seedShown"></b></p>
+  <p><b>Laquelle donne le plus envie ?</b></p>
+  <div class="pair">
+    <button id="left" aria-label="Choisir la photo de gauche"><img id="imgL" alt="Photo de gauche"></button>
+    <button id="right" aria-label="Choisir la photo de droite"><img id="imgR" alt="Photo de droite"></button>
+  </div>
+</section>
+
+<section id="done" hidden>
+  <h2>Résultat</h2>
+  <p id="summary"></p>
+  <p><button id="copy">Copier le résultat</button> <span id="copied" class="note"></span></p>
+  <textarea id="json" readonly aria-label="Résultat en JSON"></textarea>
+</section>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const stem = (f) => f.name.replace(/\.[^.]+$/, '');
+  const byName = (a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
+  // PRNG mulberry32 : même graine, même ordre
+  const rng = (s) => () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  let pairs, i, seed, urls = [], answers, ready = false, gen = 0;
+
+  function setup() {
+    const o = [...$('orig').files].sort(byName), s = [...$('studio').files].sort(byName);
+    if (!o.length || o.length !== s.length) { $('msg').textContent = 'Choisissez le même nombre d\'originaux et de sorties du Studio.'; return; }
+    const so = new Map(s.map((f) => [stem(f), f]));
+    const dup = new Set(s.map(stem)).size !== s.length || new Set(o.map(stem)).size !== o.length; // même nom, extensions différentes
+    const named = !dup && o.every((f) => so.has(stem(f)));
+    pairs = o.map((f, k) => ({ name: stem(f), orig: f, studio: named ? so.get(stem(f)) : s[k] }));
+    const v = $('seed').value.trim();
+    seed = v === '' ? Math.floor(Math.random() * 4294967296) : Number(v) >>> 0;
+    const r = rng(seed);
+    pairs.forEach((p) => { p.studioLeft = r() < 0.5; });
+    for (let k = pairs.length - 1; k > 0; k--) { const j = Math.floor(r() * (k + 1)); [pairs[k], pairs[j]] = [pairs[j], pairs[k]]; }
+    answers = []; i = 0;
+    $('seedShown').textContent = seed; $('seed').value = seed; $('total').textContent = pairs.length;
+    $('msg').textContent = named ? '' : (dup ? 'Attention : deux fichiers ont le même nom à l’extension près ; ' : 'Noms différents : ') + 'paires formées par ordre alphabétique.';
+    $('play').hidden = false; $('done').hidden = true;
+    show();
+  }
+
+  function show() {
+    urls.forEach(URL.revokeObjectURL); urls = [];
+    const p = pairs[i], a = URL.createObjectURL(p.orig), b = URL.createObjectURL(p.studio);
+    urls.push(a, b);
+    ready = false; $('left').disabled = $('right').disabled = true; // pas de choix avant que les deux images soient affichées
+    const L = $('imgL'), R = $('imgR');
+    L.src = p.studioLeft ? b : a; R.src = p.studioLeft ? a : b;
+    $('pos').textContent = i + 1;
+    const g = ++gen;                                  // un decode() d'un affichage ou d'un redémarrage précédent ne doit rien activer
+    Promise.all([L, R].map((im) => im.decode().catch(() => {}))).then(() => { if (g === gen) { ready = true; $('left').disabled = $('right').disabled = false; } });
+  }
+
+  function pick(left) {
+    if (!ready) return;
+    ready = false;
+    const p = pairs[i];
+    answers.push({ name: p.name, studio_left: p.studioLeft, choice: left ? 'gauche' : 'droite', studio_preferred: left === p.studioLeft });
+    if (++i < pairs.length) return show();
+    urls.forEach(URL.revokeObjectURL); urls = [];
+    const n = answers.filter((x) => x.studio_preferred).length;
+    const pct = Math.round(1000 * n / answers.length) / 10;
+    const success = answers.length >= 20 && n / answers.length >= 0.75;
+    const res = { seed, n: answers.length, studio_preferred: n, pct, success, answers };
+    $('summary').textContent = `${n} / ${answers.length} préférées (${pct} %), critère : ≥ 75 % sur au moins 20 paires : ` + (answers.length < 20 ? 'non évaluable (moins de 20 paires).' : success ? 'atteint.' : 'non atteint.');
+    $('json').value = JSON.stringify(res, null, 1);
+    $('play').hidden = true; $('done').hidden = false;
+  }
+
+  async function copy() {
+    const t = $('json'); t.focus(); t.select(); t.setSelectionRange(0, 1e9);
+    try { await navigator.clipboard.writeText(t.value); $('copied').textContent = 'Copié.'; }
+    catch { try { $('copied').textContent = document.execCommand('copy') ? 'Copié.' : 'Texte sélectionné : copiez-le à la main.'; } catch { $('copied').textContent = 'Texte sélectionné : copiez-le à la main.'; } }
+  }
+
+  $('start').onclick = setup;
+  $('left').onclick = () => pick(true);
+  $('right').onclick = () => pick(false);
+  $('copy').onclick = copy;
+})();
+</script>
+</body>
+</html>
