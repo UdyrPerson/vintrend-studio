@@ -1,6 +1,11 @@
 {
- "version": "202af66854744b68",
+ "version": "b853a20e13e9bea6",
  "files": [
+  {
+   "path": "app.js",
+   "sha256": "9ab296fa1a6a599778eaf1a81031ab7d21b39fcde1f29cb6725468d4f979a0a1",
+   "size": 15752
+  },
   {
    "path": "bench.html",
    "sha256": "53b6266a0eb79bde3d6ee113ddc2b3b39a05a3b9cc4d8ab338b5785a743b560b",
@@ -63,8 +68,8 @@
   },
   {
    "path": "index.html",
-   "sha256": "10f2ef4f8eeabbac9a51d6330d1f99505adfcc1422531dc52a6744199ee2dbc6",
-   "size": 2523
+   "sha256": "a21b74671e518bae6d75f7b9bde2f8197577fbdc5c52cba212fa2e2ab1690eaf",
+   "size": 4435
   },
   {
    "path": "judge.html",
@@ -82,14 +87,19 @@
    "size": 11397
   },
   {
+   "path": "lib/edit.js",
+   "sha256": "07c1904527cf5cda55b6836b1c7593688732cc582553e6733ee05234801eb445",
+   "size": 6779
+  },
+  {
    "path": "lib/face.js",
    "sha256": "67093d6948fbbc494e3d4cd40735aac95b0316b9647efc59ebdbdbed32334d6f",
    "size": 2574
   },
   {
    "path": "lib/models.js",
-   "sha256": "5930476515698d74d0bd70b6ba2cc0a0670ccf7240ceecaef15ff6528ef16b0d",
-   "size": 5991
+   "sha256": "438084a4ea1c683b6c281362ddf8d706480cacb7cb83cb55064fa8f9f2cbc8e0",
+   "size": 6669
   },
   {
    "path": "lib/photo_q.js",
@@ -128,8 +138,8 @@
   },
   {
    "path": "models.json",
-   "sha256": "41713792c47ade9c9337d326e878c763fa366ca8e5d18e5f9444883afb18be02",
-   "size": 2258
+   "sha256": "5616a580d91f491a21aae07668695c0806417dda96b4786469ad4b9b597d4a1f",
+   "size": 2257
   },
   {
    "path": "models/isnet.bin",
@@ -163,12 +173,12 @@
   },
   {
    "path": "style.css",
-   "sha256": "8a25eb332e62fd800f15f9f536fcfaa505b80ef139fb9509ce608ac7a1f56858",
-   "size": 596
+   "sha256": "490034ae2ae911e5a8203ee8338f712705e83f4d285b9e4a810c45d682cb5b10",
+   "size": 2273
   },
   {
    "path": "sw.js",
-   "sha256": "c7d301fcc13b10e6e933fb4209af307a2872d8bf74693c8edcad0c11174ae0de",
+   "sha256": "deb4608fcabebc8d55eff8d27083cfc5571f38b5de415838c3bd2250f6f2c67d",
    "size": 2375
   },
   {

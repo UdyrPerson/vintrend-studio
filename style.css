@@ -6,3 +6,25 @@ button { font: inherit; padding: 10px 16px; border: 0; border-radius: 8px; backg
 #banner { margin: 12px 0; padding: 12px; border: 1px solid var(--accent); border-radius: 8px; }
 #banner[hidden] { display: none; }
 progress { width: 100%; }
+[hidden] { display: none !important; }
+button, select { min-height: 44px; }
+button:disabled { opacity: .5; }
+button.ghost, .seg button { background: transparent; color: var(--fg); border: 2px solid var(--accent); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.row, .seg { display: flex; gap: 8px; flex-wrap: wrap; }
+.seg button { flex: 1; padding: 8px; }
+fieldset { border: 1px solid var(--accent); border-radius: 8px; margin: 12px 0; }
+fieldset label { display: block; margin: 8px 0; }
+fieldset select, fieldset input[type="range"] { display: block; width: 100%; font: inherit; }
+fieldset .check { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+.card { margin: 16px 0; padding: 12px; border: 1px solid var(--accent); border-radius: 8px; }
+.card img { display: block; aspect-ratio: 3 / 4; object-fit: contain; width: 100%; max-width: 480px; margin: 8px auto; border-radius: 4px; touch-action: manipulation; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
+.card p { margin: 6px 0; }
+.name, .hint { font-size: .85rem; opacity: .75; }
+.bad { color: #b3261e; }
+@media (prefers-color-scheme: dark) { .bad { color: #ff8a80; } }
+.note { padding: 6px 10px; border: 1px solid #ca3; border-radius: 8px; }
+.note:empty { display: none; }
+/* ponytail: le detourage tourne sur le fil principal ; une animation de transform reste fluide car elle passe par le compositeur */
+.spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid var(--accent); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
