@@ -31,19 +31,21 @@
   <div id="list"></div>
   <fieldset id="settings">
     <legend>Réglages de la série</legend>
-    <label>Fond
-      <select id="bg">
-        <option value="auto">Auto</option>
-        <option value="blanc">Blanc cassé</option>
-        <option value="gris">Gris clair</option>
-        <option value="beige">Beige clair</option>
-      </select>
-    </label>
+    <div>Fond (photos À plat)
+      <div id="bg" class="swatches" role="group" aria-label="Fond"></div>
+    </div>
     <label>Ombre
       <select id="shadow">
         <option value="none">Aucune</option>
         <option value="light">Légère</option>
         <option value="normal" selected>Normale</option>
+      </select>
+    </label>
+    <label>Lumière studio (photos À plat et Porté)
+      <select id="light">
+        <option value="none">Aucune</option>
+        <option value="soft" selected>Douce</option>
+        <option value="strong">Forte</option>
       </select>
     </label>
     <label>Luminosité <output id="ev-out">Auto</output>
@@ -65,6 +67,7 @@
 <script type="module" src="./app.js"></script>
 <script type="module">
 import { fetchBytes } from './lib/models.js';
+import { chosen } from './app.js';
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js', { type: 'module' }).catch(() => {});
 navigator.storage?.persist?.().catch(() => {});
@@ -73,7 +76,7 @@ navigator.storage?.persist?.().catch(() => {});
 const $ = (id) => document.getElementById(id);
 (async () => {
   const cfg = await (await fetch('./models.json')).json();
-  const m = cfg.models[cfg.default];
+  const m = cfg.models[await chosen];   // modèle choisi par app.js (BiRefNet si WebGPU, sinon isnet ; repli après plantage)
   if (!m?.files.length) return;
   const urls = m.files.map((f) => new URL(`./models/${f}`, location.href).href);
   const cached = await Promise.all(urls.map((u) => caches.match(u)));

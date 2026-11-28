@@ -4,13 +4,17 @@ import { getConfig, loadModel, segment } from './lib/models.js';
 const $ = (id) => document.getElementById(id);
 const name = new URLSearchParams(location.search).get('model') || 'u2netp';
 const FLAG = 'vt_bench_running';
-const report = { ua: navigator.userAgent, model: name, loadMs: null, photos: [] };
+const report = { ua: navigator.userAgent, model: name, ep: null, gpu: !!navigator.gpu, loadMs: null, downloadMs: null, sessionMs: null, photos: [] };
 $('model').textContent = name;
 getConfig().then((c) => {
   const m = c.models[name];
   if (!m) $('status').textContent = 'Modèle inconnu.';
   else if (m.wasm_ok === false) { $('status').textContent = 'non supporté (WASM)'; $('files').disabled = true; }
-  else if (m.gate_label) $('model').textContent = `${name} (${m.gate_label})`;
+  else {
+    report.ep = m.ep ?? 'wasm';
+    $('model').textContent = `${name} (EP ${report.ep}${m.gate_label ? ', ' + m.gate_label : ''})`;
+    if (report.ep === 'webgpu' && !navigator.gpu) $('status').textContent = 'WebGPU absent de ce navigateur : ce modèle ne pourra pas se charger.';
+  }
 }).catch((e) => { $('status').textContent = 'Erreur : impossible de lire models.json (' + (e && e.message || e) + ')'; $('files').disabled = true; });
 
 try { if (sessionStorage.getItem(FLAG)) $('crash').hidden = false; } catch {}
@@ -50,8 +54,12 @@ $('files').addEventListener('change', async (e) => {
     if (report.loadMs === null) {
       $('status').textContent = `Chargement du modèle ${name}...`;
       const t = performance.now();
-      await loadModel(name, (got, tot) => { $('status').textContent = `Chargement ${name} : ${Math.round(got / 1048576)} / ${Math.round(tot / 1048576)} Mo`; });
+      await loadModel(name, (got, tot) => {
+        $('status').textContent = got < tot ? `Chargement ${name} : ${Math.round(got / 1048576)} / ${Math.round(tot / 1048576)} Mo` : `Création de la session (EP ${report.ep})…`;
+        if (got >= tot) report.downloadMs = Math.round(performance.now() - t);
+      });
       report.loadMs = Math.round(performance.now() - t);
+      report.sessionMs = report.loadMs - report.downloadMs;   // création de la session (compilation WebGPU comprise)
     }
     for (const [i, f] of files.entries()) {
       $('status').textContent = `Photo ${i + 1} / ${files.length} : ${f.name}`;
@@ -60,7 +68,7 @@ $('files').addEventListener('change', async (e) => {
       const timing = {};
       const t = performance.now();
       const mask = await segment(await loadModel(name), name, bmp, timing);
-      const r = { file: f.name, w: bw, h: bh, preMs: Math.round(timing.pre), inferMs: Math.round(timing.infer), postMs: Math.round(timing.post), totalMs: Math.round(performance.now() - t), heapMB: heapMB() };
+      const r = { file: f.name, w: bw, h: bh, preMs: Math.round(timing.pre), inferMs: Math.round(timing.infer), postMs: Math.round(timing.post), totalMs: Math.round(performance.now() - t), nan: mask.nan, heapMB: heapMB() };
       report.photos.push(r);
       show(bmp, mask, JSON.stringify(r, null, 1));
       bmp.close();

@@ -5,7 +5,7 @@
 import { createStore } from './lib/store.js';
 
 // publish.mjs remplace le marqueur ci-dessous par la version de precache.json : chaque publication change les octets de sw.js.
-const VERSION = 'b853a20e13e9bea6';
+const VERSION = 'fed2554db3518002';
 const MODELS = 'vs-models';
 const isModel = (p) => p.startsWith('models/') && p.endsWith('.bin');
 const rel = (url) => new URL(url).pathname.slice(new URL('./', self.location.href).pathname.length);

@@ -1,21 +1,24 @@
 // Ecran d'edition (POC) : import, detourage une photo a la fois, rendu par mode, reglages de serie, export.
 // Toute la logique testable est dans lib/edit.js ; ici seulement le DOM, le decodage et l'enregistrement.
-import { getConfig, loadModel, segment } from './lib/models.js';
+import { getConfig, loadModel, releaseModel, segment } from './lib/models.js';
 import { detectFaces } from './lib/face.js';
 import { createStore } from './lib/store.js';
 import { measure, advise } from './lib/quality.js';
 import { thumbnailSize } from './lib/resample.js';
-import { renderPhoto, hideFaces, workSize, tooBig, exportName, nextBatch } from './lib/edit.js';
+import { renderPhoto, hideFaces, workSize, tooBig, exportName, nextBatch, nextModel, startModel, maskSane, migrateSet, autoSource, seriesAuto, staleAuto } from './lib/edit.js';
+import { PALETTE } from './lib/backdrop.js';
 
 const $ = (id) => document.getElementById(id);
 const store = createStore();
 const MODES = [['flat', 'À plat'], ['worn', 'Porté'], ['light', 'Lumière seule']];
-const LABEL = { u2netp: 'léger', isnet: 'précis' };
-const photos = [];                                   // {file, mode, status: idle|pending|busy|done|error, final (erreur definitive), stale, mask, metrics, res, jpeg, url, el, msg}
-let set = { bg: 'auto', shadow: 'normal', ev: null, hideFace: false };
+const LABEL = { birefnet: 'haute précision', isnet: 'précis', u2netp: 'léger' };
+const photos = [];                                   // {file, mode, rot (degres horaires 0/90/180/270, applique au decodage), status: idle|pending|busy|done|error, final (erreur definitive), stale, mask, metrics, res, jpeg, url, el, msg}
+const SET0 = { bg: 'auto', shadow: 'normal', ev: null, hideFace: false, light: 'soft' };   // bg : 'auto' ou '#RRGGBB' (edit.studioOpts) ; light : edit.LIGHTS
+let set = { ...SET0 };
 let modelName, files = [], pumping = false, shareIdx = 0;
 
-const ss = (k, v) => { try { return v === undefined ? sessionStorage.getItem(k) : v === null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v); } catch { return null; } };
+const kv = (name) => (k, v) => { try { const st = globalThis[name]; return v === undefined ? st.getItem(k) : v === null ? st.removeItem(k) : st.setItem(k, v); } catch { return null; } };
+const ss = kv('sessionStorage'), ls = kv('localStorage');   // ls : vsNoBiref = date du dernier echec de BiRefNet sur cet appareil (voir getMask)
 const say = (t) => { $('status').textContent = t; $('spinner').hidden = !/en cours|Téléchargement|Préparation/.test(t); };
 // Avis durables (repli de modele, plantage, detourage indisponible) : zone a part, jamais ecrasee par la ligne de progression.
 const notes = [];
@@ -24,32 +27,54 @@ const h = (tag, props = {}, ...kids) => { const e = Object.assign(document.creat
 const fr = (n) => String(n).replace('.', ',');
 
 // --- decodage -------------------------------------------------------------------------------------------------------------
-const canvasOf = (bmp, w, h, r) => {
+// Dessine bmp (ou la zone r, dans le repere APRES rotation) en w x h, tourne de rot degres horaires : transformation du canevas,
+// aucune copie pleine resolution. Matrices [a b c d e f] des quarts de tour d'un bitmap W x H.
+const TURNS = (W, H) => [[1, 0, 0, 1, 0, 0], [0, 1, -1, 0, H, 0], [-1, 0, 0, -1, W, H], [0, -1, 1, 0, 0, W]];
+const sizeOf = (bmp, rot) => (rot % 180 ? [bmp.height, bmp.width] : [bmp.width, bmp.height]);
+const canvasOf = (bmp, w, h, r, rot = 0) => {
   const c = Object.assign(document.createElement('canvas'), { width: w, height: h }), g = c.getContext('2d', { willReadFrequently: true });
   g.imageSmoothingQuality = 'high';
-  if (r) g.drawImage(bmp, r.sx, r.sy, r.sw, r.sh, 0, 0, w, h); else g.drawImage(bmp, 0, 0, w, h);
+  if (rot) {
+    const [bw, bh] = sizeOf(bmp, rot), q = r ?? { sx: 0, sy: 0, sw: bw, sh: bh };
+    g.scale(w / q.sw, h / q.sh); g.translate(-q.sx, -q.sy); g.transform(...TURNS(bmp.width, bmp.height)[rot / 90]); g.drawImage(bmp, 0, 0);
+  } else if (r) g.drawImage(bmp, r.sx, r.sy, r.sw, r.sh, 0, 0, w, h); else g.drawImage(bmp, 0, 0, w, h);
   return c;
 };
 const pixels = (c) => ({ width: c.width, height: c.height, data: c.getContext('2d').getImageData(0, 0, c.width, c.height).data });
 const free = (c) => { c.width = c.height = 0; };   // iOS compte les tampons des canvas dans la memoire
 
-// --- detourage : modele precis (isnet), repli leger (u2netp) ---------------------------------------------------------------
+// --- detourage : BiRefNet (WebGPU), repli isnet puis u2netp (wasm), voir edit.startModel ------------------------------------
 const showModel = () => { $('model').textContent = `Détourage : ${LABEL[modelName] ?? modelName}`; };
-// Drapeau « detourage en cours » : pose des que les octets du modele sont tous recus (la creation de la session, pic memoire
-// d'isnet sur iPhone, et segment() sont donc couverts) mais pas pendant le telechargement : quitter la page alors ne
-// ressemble pas a un plantage ; s'il est encore la au chargement, l'onglet a plante (memoire) -> modele leger pour la session.
+// Drapeau « detourage en cours » (vsSeg = nom du modele) : pose des que les octets du modele sont tous recus (la creation de la
+// session, pic memoire sur iPhone, et segment() sont donc couverts) mais pas pendant le telechargement : quitter la page alors ne
+// ressemble pas a un plantage ; s'il est encore la au chargement, l'onglet a plante (memoire) -> modele suivant pour la session.
+let segOn = false;   // un detourage (creation de session comprise) est en cours
+// Onglet cache (changement d'appli) : iOS peut le tuer en arriere-plan sans que ce soit la faute du modele -> drapeau efface,
+// remis au retour si le detourage continue. Un plantage au premier plan reste detecte.
+document.addEventListener('visibilitychange', () => ss('vsSeg', !document.hidden && segOn ? modelName : null));
 async function getMask(canvas) {
   for (;;) {
     try {
-      const session = await loadModel(modelName, (got, total) => { if (got < total) return say(`Téléchargement du modèle… ${Math.round((100 * got) / total)} %`); ss('vsSeg', '1'); say('Préparation du modèle…'); });
+      const prep = modelName === 'birefnet' ? 'Préparation du modèle (première fois, jusqu’à 1 min)…' : 'Préparation du modèle…';
+      const session = await loadModel(modelName, (got, total) => { if (got < total) return say(`Téléchargement du modèle… ${Math.round((100 * got) / total)} %`); segOn = true; ss('vsSeg', modelName); say(prep); });
       $('banner').hidden = true;   // modèle reçu par l'appli : la bannière n'a plus lieu d'être
-      say('Détourage en cours (~25 s)…');
-      ss('vsSeg', '1');   // session deja chargee : aucun rappel de progression
-      return await segment(session, modelName, canvas);   // ponytail: sur le fil principal (spinner CSS) ; Web Worker si cela gene sur les telephones
+      say(modelName === 'birefnet' ? 'Détourage en cours…' : 'Détourage en cours (~25 s)…');
+      segOn = true; ss('vsSeg', modelName);   // session deja chargee : aucun rappel de progression
+      const m = await segment(session, modelName, canvas);   // ponytail: sur le fil principal (spinner CSS) ; Web Worker si cela gene sur les telephones
+      if (modelName !== 'birefnet' || maskSane(m)) return m;
+      throw Object.assign(new Error('masque incohérent'), { insane: true });   // garde de coherence (NaN, masque vide ou plein)
     } catch (e) {
-      if (modelName === 'u2netp') { note(`Détourage indisponible (${e.message || e}) : Lumière seule.`); return null; }
-      modelName = 'u2netp'; showModel(); note('Détourage précis indisponible : détourage léger utilisé.');
-    } finally { ss('vsSeg', null); }
+      // Echec apres reception du modele (session, detourage, garde ; vsSeg encore pose) : repli pour la session et, pour BiRefNet, sur
+      // cet appareil pendant 7 jours (localStorage, sinon chaque lancement replanterait) ; un simple echec de telechargement ne fige rien.
+      // La session abandonnee est liberee avant le repli (memoire GPU et tas wasm partage, iPhone 4 Go).
+      const next = nextModel(modelName), sticky = e.insane || ss('vsSeg') === modelName;
+      releaseModel(modelName).catch(() => {});
+      if (sticky && modelName === 'birefnet') ls('vsNoBiref', String(Date.now()));
+      if (!next) { note(`Détourage indisponible (${e.message || e}) : Lumière seule.`); return null; }
+      if (sticky) ss('vsModel', next);
+      note(e.insane ? 'Détourage haute précision incohérent sur cet appareil : détourage précis utilisé pendant 7 jours.' : `Détourage ${LABEL[modelName]} indisponible : détourage ${LABEL[next]} utilisé.`);
+      modelName = next; showModel();
+    } finally { segOn = false; ss('vsSeg', null); }
   }
 }
 // Masque en memoire : 1 octet par pixel (3 Mo a 2048 px) au lieu de 4 ; la quantification est la meme a chaque rendu.
@@ -63,20 +88,22 @@ async function process(p) {
   try {
     try { bmp = await createImageBitmap(p.file, { imageOrientation: 'from-image' }); }
     catch { throw Object.assign(new Error('Photo illisible (format non pris en charge, HEIC ?) : ignorée.'), { final: true }); }
+    const rot = p.rot;   // rotation de ce traitement (lue apres le decodage : mesures et masque de la meme) ; Pivoter ensuite la rend perimee (redo -> p.stale)
     if (tooBig(bmp.width, bmp.height)) throw Object.assign(new Error(`Photo trop grande (${Math.round((bmp.width * bmp.height) / 1e6)} Mpx, maximum 40) : ignorée.`), { final: true });
-    const [ww, wh] = workSize(bmp.width, bmp.height);
-    wc = canvasOf(bmp, ww, wh);
+    const [bw, bh] = sizeOf(bmp, rot), [ww, wh] = workSize(bw, bh);   // tout le reste (travail, mesures, masque, recadrages) vit dans le repere tourne
+    wc = canvasOf(bmp, ww, wh, null, rot);
     const work = pixels(wc);
-    if (!p.metrics) { const t = canvasOf(bmp, ...thumbnailSize(ww, wh, 160)); p.metrics = measure(pixels(t), { mode: 'flat' }); free(t); }
+    if (!p.metrics) { const t = canvasOf(bmp, ...thumbnailSize(ww, wh, 160), null, rot); p.metrics = measure(pixels(t), { mode: 'flat' }); free(t); }
     if (p.mask === undefined) {   // bitmap pleine résolution libéré pendant le détourage (pic mémoire d'isnet sur iPhone), puis relu
       bmp.close(); bmp = null; p.mask = null;
-      const m = await getMask(wc); if (m) p.mask = pack(m);
+      const m = await getMask(wc); if (m && p.rot === rot) p.mask = pack(m);   // Pivoter pendant le detourage : masque d'une autre rotation jete
+      if (p.stale) { p.status = 'pending'; return paint(p); }   // reglage change pendant le detourage : pas de rendu perime, la photo repart
       bmp = await createImageBitmap(p.file, { imageOrientation: 'from-image' });
     }
     free(wc); wc = null;
-    const src = { work, mask: p.mask && unpack(p.mask), origW: bmp.width, origH: bmp.height, cropFn: (r, w, hh) => { const c = canvasOf(bmp, w, hh, r), im = pixels(c); free(c); return im; } };
+    const src = { work, mask: p.mask && unpack(p.mask), origW: bw, origH: bh, cropFn: (r, w, hh) => { const c = canvasOf(bmp, w, hh, r, rot), im = pixels(c); free(c); return im; } };
     say(`Rendu en cours… (${photos.indexOf(p) + 1}/${photos.length})`);
-    let res = renderPhoto(src, p.mode, set);
+    let res = renderPhoto(src, p.mode, { ...set, auto: seriesAuto(photos, p) });
     if (set.hideFace && p.mode === 'worn' && res.ok) { say('Détection du visage en cours (15 Mo à la première utilisation)…'); res = await hideFaces(res, detectFaces); }
     p.res = res; p.jpeg = null;
     if (!res.ok && p.url) { URL.revokeObjectURL(p.url); p.url = null; }
@@ -103,21 +130,30 @@ async function pump() {
   if (pumping) return;
   pumping = true;
   let n = 0, ok = 0;
-  try { for (let p; (p = photos.find((q) => q.status === 'pending'));) { await process(p); n++; if (p.status !== 'error') ok++; } }
+  try { for (let p; (p = photos.find((q) => q.status === 'pending'));) { await process(p); n++; if (p.status !== 'error') ok++; syncAuto(); } }
   finally { pumping = false; if (n) say(ok ? 'Terminé.' : 'Aucune photo traitée.'); else if (!photos.length) say(''); refresh(); }
 }
 
 // Un reglage change : les photos concernees repartent des masques en cache (pas de nouveau detourage) ; une erreur passagere = nouvel essai.
 const redo = (pred) => { for (const p of photos) if (pred(p)) { if (p.status === 'busy') p.stale = true; else if (p.status === 'done' || (p.status === 'error' && !p.final)) p.status = 'pending'; paint(p); } refresh(); persist(); pump(); };
 
-// --- persistance : originaux + modes + reglages (les masques restent en memoire) ---------------------------------------------
+// Fond Auto de la serie (edit.seriesAuto) : la source change (premiere rendue, retiree, changee de mode) -> les photos Auto rendues sont refaites.
+const source = () => autoSource(photos)?.res.choices;
+const syncAuto = () => { const stale = staleAuto(photos, set); if (stale && photos.some(stale)) redo(stale); };
+const pickBg = (v) => { if (set.bg !== v) { set.bg = v; redo((p) => p.mode === 'flat'); } };
+
+// Pivoter (S-R20) : un quart de tour horaire, puis nouveau detourage sur la photo tournee (BiRefNet detoure moins bien une photo
+// couchee : un trou de sol entre manche et corps restait dans le masque tourne) ; les mesures sont refaites.
+const turn = (p) => { p.rot = (p.rot + 90) % 360; p.mask = undefined; p.metrics = undefined; redo((q) => q === p); };
+
+// --- persistance : originaux + modes + rotations + reglages (les masques restent en memoire) ---------------------------------------------
 // ponytail: tout l'article est reecrit a chaque changement ; ecrire seulement le delta si cela pese.
-const persist = () => store.saveItem({ photos: photos.filter((p) => !(p.status === 'error' && p.final)).map((p) => ({ file: p.file, mode: p.mode })), set, updatedAt: Date.now() }).catch(() => {});
+const persist = () => store.saveItem({ photos: photos.filter((p) => !(p.status === 'error' && p.final)).map((p) => ({ file: p.file, mode: p.mode, rot: p.rot })), set, updatedAt: Date.now() }).catch(() => {});
 
 // --- interface ----------------------------------------------------------------------------------------------------------------
-function add(list, status = 'pending', modes = []) {   // restauration (idle) : on ne reecrit pas l'article, sa date de peremption ne bouge pas
+function add(list, status = 'pending', modes = [], rots = []) {   // restauration (idle) : on ne reecrit pas l'article, sa date de peremption ne bouge pas
   for (const [i, file] of [...list].entries()) {
-    const p = { file, mode: modes[i] ?? 'flat', status, mask: undefined };
+    const p = { file, mode: modes[i] ?? 'flat', rot: rots[i] ?? 0, status, mask: undefined };
     p.el = h('section', { className: 'card' });
     photos.push(p); $('list').append(p.el); paint(p);
   }
@@ -141,13 +177,14 @@ function paint(p) {
     h('p', { className: 'name', textContent: p.file.name || 'Photo' }),
     img, r?.ok ? h('p', { className: 'hint', textContent: 'Maintenez l’image pour voir l’original.' }) : null,
     modes,
+    h('button', { type: 'button', textContent: 'Pivoter', className: 'ghost', disabled: p.status === 'error' && p.final, onclick: () => turn(p) }),
     state && h('p', { textContent: state }),
     r && h('p', { textContent: r.summary }),
     r?.reason && h('p', { className: 'bad', textContent: r.reason }),
     r?.note && h('p', { className: 'note', textContent: r.note }),
     p.msg && h('p', { className: 'bad', textContent: p.msg }),
     ...advice.map((a) => h('p', { className: 'note', textContent: a.text })),
-    h('button', { type: 'button', textContent: 'Retirer', className: 'ghost', disabled: busy, onclick: () => { if (p.url) URL.revokeObjectURL(p.url); photos.splice(photos.indexOf(p), 1); p.el.remove(); refresh(); persist(); } }),
+    h('button', { type: 'button', textContent: 'Retirer', className: 'ghost', disabled: busy, onclick: () => { if (p.url) URL.revokeObjectURL(p.url); photos.splice(photos.indexOf(p), 1); p.el.remove(); refresh(); persist(); syncAuto(); } }),
   ].filter(Boolean));
 }
 
@@ -160,7 +197,23 @@ function refresh() {
   $('resume').hidden = !photos.some((p) => p.status === 'idle');
   $('actions').hidden = !photos.length;
   const blocked = photos.filter((p) => p.status === 'done' && p.res && !p.res.ok).length;
-  $('blocked').textContent = blocked ? `${blocked} photo(s) non exportable(s) : contrôle de fidélité échoué.` : '';
+  $('blocked').textContent = blocked ? `${blocked} photo(s) non exportable(s) : contrôle de fidélité ou des couleurs échoué.` : '';
+  paintBg();
+}
+
+// Nuancier du fond (tout l'article) : Auto, les suggestions pour le vetement de la serie (nom + relation), puis toute la palette
+// (avec le « Ton sur ton » genere) ; une couleur choisie absente de ces listes (autre vetement) reste affichee.
+function paintBg() {
+  const c = source(), sugg = c?.sugg ?? [], all = [...(c?.ton ? [c.ton] : []), ...PALETTE], open = $('bg').querySelector('details')?.open;
+  const sw = (hex, name, label, val = hex) => h('button', { type: 'button', className: 'sw', ariaPressed: String(set.bg === val), onclick: () => pickBg(val) },
+    h('span', { className: 'chip', style: `background:${hex}` }), h('span', { textContent: name }), label ? h('small', { textContent: label }) : null);
+  const known = set.bg === 'auto' || [...sugg, ...all].some((x) => x.hex === set.bg);
+  $('bg').replaceChildren(
+    sw(sugg[0]?.hex ?? PALETTE[0].hex, 'Auto', sugg[0]?.name ?? 'selon le vêtement', 'auto'),
+    ...sugg.map((x) => sw(x.hex, x.name, x.label)),
+    ...(known ? [] : [sw(set.bg, 'Votre choix')]),
+    h('details', { open }, h('summary', { textContent: 'Toute la palette' }), h('div', { className: 'swatches' }, ...all.map((x) => sw(x.hex, x.name, x.label)))),
+  );
 }
 
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -186,8 +239,8 @@ function bind() {
   $('pick-btn').onclick = () => $('pick').click();
   $('pick').onchange = (e) => { add(e.target.files); e.target.value = ''; };
   $('resume').onclick = () => { for (const p of photos) if (p.status === 'idle') p.status = 'pending'; photos.forEach(paint); refresh(); pump(); };
-  $('bg').onchange = (e) => { set.bg = e.target.value; redo((p) => p.mode === 'flat'); };
   $('shadow').onchange = (e) => { set.shadow = e.target.value; redo((p) => p.mode === 'flat'); };
+  $('light').onchange = (e) => { set.light = e.target.value; redo((p) => p.mode !== 'light'); };   // masques en cache : pas de nouveau detourage
   $('ev').oninput = (e) => { $('ev-out').textContent = `${e.target.value > 0 ? '+' : ''}${fr(e.target.value)} EV`; };
   $('ev').onchange = (e) => { set.ev = parseFloat(e.target.value); redo(() => true); };
   $('ev-auto').onclick = () => { set.ev = null; $('ev').value = 0; $('ev-out').textContent = 'Auto'; redo(() => true); };
@@ -198,27 +251,37 @@ function bind() {
     if (photos.some((p) => p.status === 'busy')) return say('Attendez la fin du traitement en cours.');
     if (photos.length && !confirm('Effacer cet article et ses photos de l’appli ? (les originaux restent dans votre galerie)')) return;
     for (const p of photos) if (p.url) URL.revokeObjectURL(p.url);
-    photos.length = 0; $('list').replaceChildren(); set = { bg: 'auto', shadow: 'normal', ev: null, hideFace: false }; syncSet();
+    photos.length = 0; $('list').replaceChildren(); set = { ...SET0 }; syncSet();
     await store.clearItem().catch(() => {});
     say(''); refresh();
   };
 }
 function syncSet() {
-  $('bg').value = set.bg; $('shadow').value = set.shadow; $('face').checked = set.hideFace;
+  $('shadow').value = set.shadow; $('light').value = set.light; $('face').checked = set.hideFace;
   $('ev').value = set.ev ?? 0; $('ev-out').textContent = set.ev == null ? 'Auto' : `${set.ev > 0 ? '+' : ''}${fr(set.ev)} EV`;
 }
 
 // --- demarrage ----------------------------------------------------------------------------------------------------------------
+// Modele de la session (exporte : la banniere d'index.html ne telecharge que celui-ci). BiRefNet seulement avec un adaptateur WebGPU.
+// Rechargement ou navigation pendant un detourage (impatience au 1er usage, aller-retour vers la capture) : ce n'est pas un
+// plantage. pagehide se declenche au dechargement normal, jamais quand l'onglet est tue pour manque de memoire (HTML, « unload »).
+addEventListener('pagehide', () => ss('vsSeg', null));
+const hasGpu = async () => { try { return !!(await navigator.gpu?.requestAdapter()); } catch { return false; } };
+export const chosen = (async () => {
+  const crashed = ss('vsSeg');
+  if (crashed) ss('vsSeg', null);
+  if (crashed === 'birefnet') ls('vsNoBiref', String(Date.now()));
+  modelName = startModel({ def: (await getConfig()).default, saved: ss('vsModel'), crashed, gpu: await hasGpu(), noBiref: ls('vsNoBiref') });
+  if (crashed) { ss('vsModel', modelName); note(`La page s’est fermée pendant le détourage : détourage ${LABEL[modelName]} utilisé ${crashed === 'birefnet' ? 'sur cet appareil pendant 7 jours' : 'pour cette session'}.`); }
+  showModel();
+  return modelName;
+})();
 (async () => {
   bind();
-  const crashed = ss('vsSeg');
-  if (crashed) { ss('vsSeg', null); ss('vsModel', 'u2netp'); }
-  modelName = ss('vsModel') ?? (await getConfig()).default;
-  showModel();
-  if (crashed) note('La page s’est fermée pendant le détourage précis : détourage léger utilisé pour cette session.');
+  await chosen;
   await store.purgeStale(Date.now(), 7).catch(() => {});
   const item = await store.loadItem().catch(() => null);
-  if (item) { set = { ...set, ...item.set }; syncSet(); add(item.photos.map((x) => x.file), 'idle', item.photos.map((x) => x.mode)); }
+  if (item) { set = migrateSet({ ...set, ...item.set }); syncSet(); add(item.photos.map((x) => x.file), 'idle', item.photos.map((x) => x.mode), item.photos.map((x) => x.rot)); }
   const fresh = await store.takeShared().catch(() => []);
   if (fresh.length) { add(fresh); history.replaceState(null, '', './'); }
 })().catch((e) => say(`Erreur au démarrage : ${e.message || e}`));

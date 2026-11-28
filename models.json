@@ -1,5 +1,5 @@
 {
- "default": "isnet",
+ "default": "birefnet",
  "ort_version": "1.23.0",
  "models": {
   "u2netp": {
@@ -93,7 +93,7 @@
     46360867
    ]
   },
-  "birefnet_lite": {
+  "birefnet": {
    "input_size": 1024,
    "input_name": "input_image",
    "output_name": "output_image",
@@ -109,17 +109,21 @@
    ],
    "divide_by_max": false,
    "output": "sigmoid",
-   "ort_opt": "basic",
-   "variant": "uint8",
-   "wasm_ok": false,
-   "files": [],
-   "sha256": [
-    "bb5f773988c886d4e8f23d6bb600d3bbac7e83b7eaed04249115b94ceb65bb83",
-    "520d033a396204db6aaa14d4ab63b8d7f443ba7df3a3561f0e5e7612c80f0872",
-    "fe947c7f888d6f0c3f97eeb733dc697e7e0098e43f3a630b825b6a313719f830"
+   "ep": "webgpu",
+   "variant": "fp16i",
+   "files": [
+    "birefnet.bin.0",
+    "birefnet.bin.1"
    ],
-   "iou": 0.9992,
-   "sizes": []
+   "sizes": [
+    95000000,
+    25841372
+   ],
+   "sha256": [
+    "81c4cb85d489abe4549ac36ca8d0c3a9d66a0d26b93990f35bcbb873c11d785c",
+    "4af45e2ce5e376c774b9ace3e9850a0b1c3661ce4b0cd52ad38ee75009a80667"
+   ],
+   "iou": 1
   }
  },
  "face": {
